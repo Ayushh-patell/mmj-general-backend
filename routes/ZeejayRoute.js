@@ -56,7 +56,7 @@ router.post('/booking', upload, async (req, res) => {
     // ─── SEND MAIL ──────────────────────────────────────────────────
     const mailOptions = {
       from: `"ZeeJay service Booking" ${process.env.GMAIL_USER}`,
-      to: 'ayush.patel.code@gmail.com',
+      to: 'info@.zeejaymechanical.com',
       subject: `New Service Booking Request from ${data.firstName}`,
       html: htmlContent,
     };
