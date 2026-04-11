@@ -7,7 +7,7 @@ const app = express();
 
 // --- CORS CONFIGURATION ---
 const corsOptions = {
-  origin: ['https://tradifysolutions.com/', 'https://www.tradifysolutions.com/'], // Replace with your actual frontend URL
+  origin: ['https://tradifysolutions.com/', 'https://www.tradifysolutions.com/', 'http://localhost:5173'], // Replace with your actual frontend URL
   optionsSuccessStatus: 200 
 };
 
