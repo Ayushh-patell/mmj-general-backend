@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
 const nodemailer = require('nodemailer');
+const multer = require('multer');
 
-// Configure Multer for memory storage (easiest for small email attachments)
-const storage = multer.memoryStorage();
-const upload = multer.single('image'); // 'image' matches payload.append("image", ...)
+// 1. Initialize the multer instance first
+const uploadMiddleware = multer({ storage: multer.memoryStorage() });
+
+// 2. NOW you can call .single() on that instance
+const upload = uploadMiddleware.single('image');
 
 // ─── EMAIL CONFIGURATION ──────────────────────────────────────────
 // Replace with your actual SMTP details
