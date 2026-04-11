@@ -2,6 +2,9 @@ const express = require('express');
 const yahooFinance = require('yahoo-finance2').default;
 const router = express.Router();
 
+
+const yahooFinance = new YahooFinance();
+
 // 1. Bulk Quotes: /tradify/market/quotes/list?symbols=AAPL,TSLA
 router.get('/market/quotes/list', async (req, res) => {
   try {
