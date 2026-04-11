@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const tradifyRouter = require('./routes/TradifyRoute');
+const zeejayRouter = require('./routes/ZeejayRoute');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 // --- ROUTES ---
 // Mount the router with the "tradify" prefix
 app.use('/tradify', tradifyRouter);
+app.use('/zeejay', zeejayRouter);
 
 // Basic health check
 app.get('/', (req, res) => res.send('Tradify API Proxy is Active'));
