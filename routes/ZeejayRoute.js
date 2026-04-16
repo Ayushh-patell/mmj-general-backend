@@ -1,83 +1,145 @@
 const express = require('express');
 const router = express.Router();
-const nodemailer = require('nodemailer');
-const multer = require('multer');
-
-// 1. Initialize the multer instance first
-const uploadMiddleware = multer({ storage: multer.memoryStorage() });
-
-// 2. NOW you can call .single() on that instance
-const upload = uploadMiddleware.single('image');
-
-// ─── EMAIL CONFIGURATION ──────────────────────────────────────────
-// Replace with your actual SMTP details
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASSWORD, // Use a Gmail App Password, not your login pass
-  },
+const SDK = require('@ringcentral/sdk').SDK;
+// Initialize RingCentral SDK
+const rcsdk = new SDK({
+    server: process.env.RC_SERVER_URL,
+    clientId: process.env.RC_CLIENT_ID,
+    clientSecret: process.env.RC_CLIENT_SECRET
 });
 
-router.post('/booking', upload, async (req, res) => {
-  try {
-    const data = req.body;
+const platform = rcsdk.platform();
+
+/**
+ * Authentication Helper
+ * We use JWT to ensure the backend is always "logged in" 
+ * to send/receive messages on behalf of the business.
+ */
+
+let isSubscribed = false;
+
+async function subscribeToWebhooks(publicUrl) {
+    if (isSubscribed) return; 
     
-    // Parse the services string back into an object
-    const servicesObj = data.services ? JSON.parse(data.services) : {};
-    
-    // Format Services for HTML
-    let servicesHtml = "";
-    for (const [category, list] of Object.entries(servicesObj)) {
-      servicesHtml += `<li><strong>${category}:</strong> ${list.join(', ')}</li>`;
+    try {
+        // Optional: You could fetch existing subscriptions here to be extra safe
+        await platform.post('/restapi/v1.0/subscription', {
+            eventFilters: ['/restapi/v1.0/account/~/extension/~/message-store/instant?type=SMS'],
+            deliveryMode: {
+                transportType: 'WebHook',
+                address: `${publicUrl}/zeejay/webhook` // Ensure this matches your route mount point
+            },
+            expiresIn: 315360000 
+        });
+        isSubscribed = true;
+        console.log("RC: Webhook Subscription Active");
+    } catch (e) {
+        console.error("RC: Subscription Error:", e.message);
+    }
+}
+
+const ensureAuthenticated = async () => {
+    try {
+        const authData = await platform.auth().data();
+        
+        // In v4, we check if the token is valid
+        if (!authData.access_token) {
+            console.log("RC: No active session. Logging in with JWT...");
+            await platform.login({
+                jwt: process.env.RC_JWT
+            });
+            console.log("RC: JWT Login Successful");
+            
+            // Re-subscribe to webhooks after a fresh login
+            await subscribeToWebhooks('https://mmj-general-backend.onrender.com');
+        }
+    } catch (e) {
+        console.error("RC: Auth Error", e.message);
+        // If the token is expired/invalid, force a new login
+        await platform.login({ jwt: process.env.RC_JWT });
+        await subscribeToWebhooks('https://mmj-general-backend.onrender.com');
+    }
+};
+/**
+ * POST /zeejay/send
+ */
+router.post('/send', async (req, res) => {
+    let { customerPhone, message } = req.body;
+
+    if (!customerPhone || !message) {
+        return res.status(400).json({ error: "Missing phone or message" });
     }
 
-    // ─── HTML EMAIL TEMPLATE ────────────────────────────────────────
-    const htmlContent = `
-      <div style="font-family: sans-serif; color: #333; max-width: 600px; border: 1px solid #eee; padding: 20px;">
-        <h2 style="color: #0284c7;">New Service Booking Request</h2>
-        <hr />
-        <p><strong>Customer:</strong> ${data.firstName} ${data.lastName}</p>
-        <p><strong>Email:</strong> ${data.email}</p>
-        <p><strong>Phone:</strong> ${data.phone}</p>
-        
-        <h3 style="color: #0284c7;">Address</h3>
-        <p>${data.street}, Unit ${data.unit || 'N/A'}<br>${data.city}, ${data.state} ${data.code}<br>${data.country}</p>
-        
-        <h3 style="color: #0284c7;">Selected Services</h3>
-        <ul>${servicesHtml}</ul>
-        
-        <p><strong>Additional Details:</strong><br>${data.additionalDetails || 'None'}</p>
-        
-        ${req.file ? '<p style="color: #666;"><i>(An image was attached to this request)</i></p>' : ''}
-      </div>
-    `;
-
-    // ─── SEND MAIL ──────────────────────────────────────────────────
-    const mailOptions = {
-      from: `"ZeeJay service Booking" ${process.env.GMAIL_USER}`,
-      to: 'info@.zeejaymechanical.com',
-      subject: `New Service Booking Request from ${data.firstName}`,
-      html: htmlContent,
-    };
-
-    // Attach image if it exists
-    if (req.file) {
-      mailOptions.attachments = [
-        {
-          filename: req.file.originalname,
-          content: req.file.buffer,
-        },
-      ];
+    // CLEANUP: Ensure phone starts with + (RingCentral requirement)
+    if (!customerPhone.startsWith('+')) {
+        customerPhone = `+${customerPhone.replace(/\D/g, '')}`; 
     }
 
-    await transporter.sendMail(mailOptions);
-    res.status(200).json({ message: "Booking received and email sent!" });
+    try {
+        await ensureAuthenticated();
 
-  } catch (error) {
-    console.error("Booking API Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
+        const response = await platform.post('/restapi/v1.0/account/~/extension/~/sms', {
+            from: { phoneNumber: process.env.RC_BUSINESS_NUMBER },
+            to: [{ phoneNumber: customerPhone }],
+            text: message // The "Thread" is handled automatically by RC via the phone number
+        });
+
+        const data = await response.json();
+        res.status(200).json({ success: true, messageId: data.id });
+    } catch (error) {
+        console.error("RC Error:", error.message);
+        res.status(500).json({ error: "Failed to send" });
+    }
+});
+
+/**
+ * POST /zeejay/webhook
+ * RingCentral calls this whenever an event (like a new SMS) occurs.
+ */
+router.post('/webhook', async (req, res) => {
+    // 1. THE HANDSHAKE (MANDATORY)
+    // When you first register the webhook, RC sends a validation token.
+    // You MUST return this in the header to activate the webhook.
+    const validationToken = req.headers['validation-token'];
+    if (validationToken) {
+        res.setHeader('Validation-Token', validationToken);
+        return res.status(200).send();
+    }
+
+    // 2. EXTRACT NOTIFICATION BODY
+    const notification = req.body;
+
+    // 3. FILTER FOR INBOUND SMS
+    // body.direction === 'Inbound' ensures we only react to the OWNER'S reply, 
+    // and not the message our own backend just sent to RC.
+    if (
+        notification &&
+        notification.body &&
+        notification.body.direction === 'Inbound' &&
+        notification.body.messageStatus === 'Received'
+    ) {
+        const replyText = notification.body.subject; // The text the owner typed
+        const senderPhone = notification.body.from.phoneNumber; // The Business Number
+        const customerPhone = notification.body.to[0].phoneNumber; // The User's Number
+
+        console.log(`New Reply from Owner to ${customerPhone}: ${replyText}`);
+
+        /**
+         * 4. PUSH TO FRONTEND
+         * If you are using Socket.io, you can access it via the app object:
+         */
+        const io = req.app.get('socketio'); 
+        if (io) {
+            io.emit('rc_message', {
+                text: replyText,
+                sender: 'business',
+                timestamp: new Date().toISOString()
+            });
+        }
+    }
+
+    // 5. ALWAYS respond with 200 OK immediately
+    res.status(200).json({ status: 'Success' });
 });
 
 module.exports = router;
