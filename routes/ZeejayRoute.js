@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+require('dotenv').config();
 const SDK = require('@ringcentral/sdk').SDK;
 // Initialize RingCentral SDK
 const rcsdk = new SDK({
@@ -89,6 +90,26 @@ router.post('/send', async (req, res) => {
     } catch (error) {
         console.error("RC Error:", error.message);
         res.status(500).json({ error: "Failed to send" });
+    }
+});
+
+
+router.get('/check-numbers', async (req, res) => {
+    try {
+        await ensureAuthenticated();
+        // This lists all phone numbers assigned to the current authorized user
+        const response = await platform.get('/restapi/v1.0/account/~/extension/~/phone-number');
+        const data = await response.json();
+        
+        // Look for numbers where features include "SmsSender"
+        const smsNumbers = data.records.filter(nr => nr.features.includes('SmsSender'));
+        
+        res.json({ 
+            all_numbers: data.records,
+            use_one_of_these_for_sms: smsNumbers.map(n => n.phoneNumber)
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
     }
 });
 
