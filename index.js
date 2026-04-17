@@ -18,7 +18,7 @@ const io = new Server(server, {
       'https://raelectricalltd.com',
       'https://www.raelectricalltd.com',
       'https://raelectrical-site.web.app',
-      'https://zeejaymechanical.web.app/',
+      'https://zeejaymechanical.web.app',
       'http://localhost:5173',
     ],
     methods: ["GET", "POST"]
