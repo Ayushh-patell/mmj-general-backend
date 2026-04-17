@@ -86,6 +86,8 @@ router.post('/send', async (req, res) => {
         });
 
         const data = await response.json();
+        console.log(data);
+        
         res.status(200).json({ success: true, messageId: data.id });
     } catch (error) {
         console.error("RC Error:", error.message);
