@@ -37,6 +37,7 @@ const corsOptions = {
     'https://raelectricalltd.com',
     'https://www.raelectricalltd.com',
     'https://raelectrical-site.web.app',
+    'https://zeejaymechanical.web.app',
     'http://localhost:5173',
   ],
   optionsSuccessStatus: 200 
