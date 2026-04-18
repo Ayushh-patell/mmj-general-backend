@@ -82,7 +82,7 @@ router.post('/send', async (req, res) => {
         const response = await platform.post('/restapi/v1.0/account/~/extension/~/sms', {
             from: { phoneNumber: process.env.RC_BUSINESS_NUMBER },
             to: [{ phoneNumber: process.env.RC_BUSINESS_NUMBER }],
-            text: ` From Website:\n Customer:-${customerPhone} \n Message:- ${message}` // The "Thread" is handled automatically by RC via the phone number
+            text: ` From Website:\n Customer:-${customerPhone} \n Message:- ${message}`
         });
 
         const data = await response.json();
