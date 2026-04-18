@@ -80,13 +80,12 @@ router.post('/send', async (req, res) => {
         await ensureAuthenticated();
 
         const response = await platform.post('/restapi/v1.0/account/~/extension/~/sms', {
-            from: { phoneNumber: customerPhone },
+            from: { phoneNumber: process.env.RC_BUSINESS_NUMBER },
             to: [{ phoneNumber: process.env.RC_BUSINESS_NUMBER }],
-            text: message // The "Thread" is handled automatically by RC via the phone number
+            text: ` From Website:\n Customer:-${customerPhone} \n Message:- ${message}` // The "Thread" is handled automatically by RC via the phone number
         });
 
         const data = await response.json();
-        console.log(data);
         
         res.status(200).json({ success: true, messageId: data.id });
     } catch (error) {
