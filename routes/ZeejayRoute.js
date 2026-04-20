@@ -17,28 +17,6 @@ const platform = rcsdk.platform();
  * to send/receive messages on behalf of the business.
  */
 
-let isSubscribed = false;
-
-async function subscribeToWebhooks(publicUrl) {
-    if (isSubscribed) return; 
-    
-    try {
-        // Optional: You could fetch existing subscriptions here to be extra safe
-        await platform.post('/restapi/v1.0/subscription', {
-            eventFilters: ['/restapi/v1.0/account/~/extension/~/message-store/instant?type=SMS'],
-            deliveryMode: {
-                transportType: 'WebHook',
-                address: `${publicUrl}/zeejay/webhook` // Ensure this matches your route mount point
-            },
-            expiresIn: 315360000 
-        });
-        isSubscribed = true;
-        console.log("RC: Webhook Subscription Active");
-    } catch (e) {
-        console.error("RC: Subscription Error:", e.message);
-    }
-}
-
 const ensureAuthenticated = async () => {
     try {
         const authData = await platform.auth().data();
@@ -52,13 +30,11 @@ const ensureAuthenticated = async () => {
             console.log("RC: JWT Login Successful");
             
             // Re-subscribe to webhooks after a fresh login
-            await subscribeToWebhooks('https://mmj-general-backend.onrender.com');
         }
     } catch (e) {
         console.error("RC: Auth Error", e.message);
         // If the token is expired/invalid, force a new login
         await platform.login({ jwt: process.env.RC_JWT });
-        await subscribeToWebhooks('https://mmj-general-backend.onrender.com');
     }
 };
 /**
@@ -114,54 +90,6 @@ router.get('/check-numbers', async (req, res) => {
     }
 });
 
-/**
- * POST /zeejay/webhook
- * RingCentral calls this whenever an event (like a new SMS) occurs.
- */
-router.post('/webhook', async (req, res) => {
-    // 1. THE HANDSHAKE (MANDATORY)
-    // When you first register the webhook, RC sends a validation token.
-    // You MUST return this in the header to activate the webhook.
-    const validationToken = req.headers['validation-token'];
-    if (validationToken) {
-        res.setHeader('Validation-Token', validationToken);
-        return res.status(200).send();
-    }
 
-    // 2. EXTRACT NOTIFICATION BODY
-    const notification = req.body;
-
-    // 3. FILTER FOR INBOUND SMS
-    // body.direction === 'Inbound' ensures we only react to the OWNER'S reply, 
-    // and not the message our own backend just sent to RC.
-    if (
-        notification &&
-        notification.body &&
-        notification.body.direction === 'Inbound' &&
-        notification.body.messageStatus === 'Received'
-    ) {
-        const replyText = notification.body.subject; // The text the owner typed
-        const senderPhone = notification.body.from.phoneNumber; // The Business Number
-        const customerPhone = notification.body.to[0].phoneNumber; // The User's Number
-
-        console.log(`New Reply from Owner to ${customerPhone}: ${replyText}`);
-
-        /**
-         * 4. PUSH TO FRONTEND
-         * If you are using Socket.io, you can access it via the app object:
-         */
-        const io = req.app.get('socketio'); 
-        if (io) {
-            io.emit('rc_message', {
-                text: replyText,
-                sender: 'business',
-                timestamp: new Date().toISOString()
-            });
-        }
-    }
-
-    // 5. ALWAYS respond with 200 OK immediately
-    res.status(200).json({ status: 'Success' });
-});
 
 module.exports = router;
