@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 const SDK = require('@ringcentral/sdk').SDK;
 // Initialize RingCentral SDK
