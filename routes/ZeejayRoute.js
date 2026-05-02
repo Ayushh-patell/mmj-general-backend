@@ -11,6 +11,15 @@ const rcsdk = new SDK({
 
 const platform = rcsdk.platform();
 
+// Transporter Configuration
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASSWORD, // Use an "App Password" here
+  },
+});
+
 /**
  * Authentication Helper
  * We use JWT to ensure the backend is always "logged in" 
@@ -88,6 +97,94 @@ router.get('/check-numbers', async (req, res) => {
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
+});
+
+
+router.post('/contact', async (req, res) => {
+  const { name, email, phone, service, urgency, message } = req.body;
+
+  // Basic Validation
+  if (!name || !email || !message) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  // Define amber/red colors based on urgency
+  const isUrgent = urgency === 'urgent';
+  const highlightColor = isUrgent ? '#ef4444' : '#f59e0b'; // Red-500 or Amber-500
+  const bgColor = isUrgent ? '#fef2f2' : '#fffbeb'; // Red-50 or Amber-50
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: sans-serif; color: #334155; line-height: 1.6; }
+        .container { max-width: 600px; margin: 20px auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+        .header { background-color: ${highlightColor}; color: white; padding: 24px; text-align: center; }
+        .content { padding: 24px; background-color: #ffffff; }
+        .field-group { margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+        .label { font-weight: bold; font-size: 12px; text-transform: uppercase; color: #64748b; }
+        .value { font-size: 16px; color: #1e293b; }
+        .urgency-badge { 
+          display: inline-block; padding: 4px 12px; border-radius: 20px; 
+          font-weight: bold; font-size: 12px; background-color: ${bgColor}; color: ${highlightColor};
+          border: 1px solid ${highlightColor};
+        }
+        .message-box { background-color: #f8fafc; padding: 16px; border-radius: 8px; border-left: 4px solid ${highlightColor}; }
+        .footer { background-color: #f1f5f9; padding: 16px; text-align: center; font-size: 12px; color: #94a3b8; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h2 style="margin:0;">New Service Request</h2>
+          <p style="margin:4px 0 0 0;">${isUrgent ? '🚨 URGENT ACTION REQUIRED' : 'New Inquiry Received'}</p>
+        </div>
+        <div class="content">
+          <div class="field-group">
+            <div class="label">Urgency Status</div>
+            <div class="urgency-badge">${urgency.toUpperCase()}</div>
+          </div>
+          <div style="display: flex; gap: 20px;">
+            <div class="field-group" style="flex:1;">
+              <div class="label">Customer Name</div>
+              <div class="value">${name}</div>
+            </div>
+            <div class="field-group" style="flex:1;">
+              <div class="label">Requested Service</div>
+              <div class="value">${service.replace('-', ' ').toUpperCase()}</div>
+            </div>
+          </div>
+          <div class="field-group">
+            <div class="label">Contact Info</div>
+            <div class="value">${email} | ${phone}</div>
+          </div>
+          <div class="label">Customer Message:</div>
+          <div class="message-box">
+            ${message}
+          </div>
+        </div>
+        <div class="footer">
+          Sent from your website contact form.
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: `"Zeejay Mechanical WEbsite" <${process.env.GMAIL_USER}>`,
+      to: 'ayush.patel.code@gmail.com', // Send to yourself
+      subject: `${isUrgent ? '[URGENT] ' : ''}New ${service} Request from ${name}`,
+      html: htmlContent,
+    });
+
+    res.status(200).json({ message: "Email sent successfully" });
+  } catch (error) {
+    console.error("Mail Error:", error);
+    res.status(500).json({ message: "Failed to send email" });
+  }
 });
 
 
