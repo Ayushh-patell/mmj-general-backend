@@ -208,47 +208,86 @@ router.post('/contact', async (req, res) => {
  * Triggered by your external publishing event
  */
 router.post('/webhook/publish', async (req, res) => {
+  const sig = req.headers['x-autoseo-signature'];
 
-const sig = req.headers['x-autoseo-signature'];
-if (!verifySignature(req.rawBody, sig)) {
-  return res.status(401).send('Invalid signature');
-}
-    try {
-        const data = req.body;
+  if (!verifySignature(req.rawBody, sig)) {
+    return res.status(401).send('Invalid signature');
+  }
 
-        // Upsert (Update if exists by externalId, otherwise Insert)
-        const article = await Article.findOneAndUpdate(
-            { externalId: data.id }, 
-            {
-                externalId: data.id,
-                title: data.title,
-                slug: data.slug,
-                published_url: data.published_url,
-                metaDescription: data.metaDescription,
-                content_html: data.content_html,
-                content_markdown: data.content_markdown,
-                heroImageUrl: data.heroImageUrl,
-                heroImageAlt: data.heroImageAlt,
-                infographicImageUrl: data.infographicImageUrl,
-                keywords: data.keywords,
-                metaKeywords: data.metaKeywords,
-                wordpressTags: data.wordpressTags,
-                faqSchema: data.faqSchema,
-                languageCode: data.languageCode,
-                status: data.status,
-                publishedAt: data.publishedAt,
-                updatedAt: data.updatedAt,
-                createdAt: data.createdAt
-            },
-            { upsert: true, new: true }
-        );
+  try {
+    const data = req.body;
 
-        console.log(`Article "${article.title}" processed via webhook.`);
-        res.status(200).json({ success: true, url:`https://zeejaymechanical.com/blog/${data.slug}`, message: "Article synced successfully" });
-    } catch (error) {
-        console.error("Webhook Error:", error);
-        res.status(500).json({ error: "Internal server error during sync" });
+    // Check if article exists by externalId OR slug
+    let article = await Article.findOne({
+      $or: [
+        { externalId: data.id },
+        { slug: data.slug }
+      ]
+    });
+
+    if (article) {
+      // ✅ Update existing article
+      Object.assign(article, {
+        externalId: data.id,
+        title: data.title,
+        slug: data.slug,
+        published_url: data.published_url,
+        metaDescription: data.metaDescription,
+        content_html: data.content_html,
+        content_markdown: data.content_markdown,
+        heroImageUrl: data.heroImageUrl,
+        heroImageAlt: data.heroImageAlt,
+        infographicImageUrl: data.infographicImageUrl,
+        keywords: data.keywords,
+        metaKeywords: data.metaKeywords,
+        wordpressTags: data.wordpressTags,
+        faqSchema: data.faqSchema,
+        languageCode: data.languageCode,
+        status: data.status,
+        publishedAt: data.publishedAt,
+        updatedAt: data.updatedAt,
+        createdAt: data.createdAt
+      });
+
+      await article.save();
+
+    } else {
+      // ✅ Create new article
+      article = await Article.create({
+        externalId: data.id,
+        title: data.title,
+        slug: data.slug,
+        published_url: data.published_url,
+        metaDescription: data.metaDescription,
+        content_html: data.content_html,
+        content_markdown: data.content_markdown,
+        heroImageUrl: data.heroImageUrl,
+        heroImageAlt: data.heroImageAlt,
+        infographicImageUrl: data.infographicImageUrl,
+        keywords: data.keywords,
+        metaKeywords: data.metaKeywords,
+        wordpressTags: data.wordpressTags,
+        faqSchema: data.faqSchema,
+        languageCode: data.languageCode,
+        status: data.status,
+        publishedAt: data.publishedAt,
+        updatedAt: data.updatedAt,
+        createdAt: data.createdAt
+      });
     }
+
+    console.log(`Article "${article.title}" processed via webhook.`);
+
+    res.status(200).json({
+      success: true,
+      url: `https://zeejaymechanical.com/blog/${article.slug}`,
+      message: "Article synced successfully"
+    });
+
+  } catch (error) {
+    console.error("Webhook Error:", error);
+    res.status(500).json({ error: "Internal server error during sync" });
+  }
 });
 
 
