@@ -3,6 +3,8 @@ const router = express.Router();
 const nodemailer = require('nodemailer');
 const Article = require('../schema/ZeejayBlogs');
 require('dotenv').config();
+const crypto = require('crypto');
+const SECRET = 'aseo_wh_9238ce876814e35653d2e69ff001bbd6';
 const SDK = require('@ringcentral/sdk').SDK;
 // Initialize RingCentral SDK
 const rcsdk = new SDK({
@@ -21,6 +23,17 @@ const transporter = nodemailer.createTransport({
     pass: process.env.GMAIL_PASSWORD, // Use an "App Password" here
   },
 });
+
+function verifySignature(rawBody, signature) {
+  const expected = crypto
+    .createHmac('sha256', SECRET)
+    .update(rawBody)
+    .digest('hex');
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
 
 /**
  * Authentication Helper
@@ -195,6 +208,11 @@ router.post('/contact', async (req, res) => {
  * Triggered by your external publishing event
  */
 router.post('/webhook/publish', async (req, res) => {
+
+const sig = req.headers['x-autoseo-signature'];
+if (!verifySignature(req.rawBody, sig)) {
+  return res.status(401).send('Invalid signature');
+}
     try {
         const data = req.body;
 
@@ -226,7 +244,7 @@ router.post('/webhook/publish', async (req, res) => {
         );
 
         console.log(`Article "${article.title}" processed via webhook.`);
-        res.status(200).json({ success: true, message: "Article synced successfully" });
+        res.status(200).json({ success: true, url:`https://zeejaymechanical.com/blog/${data.slug}`, message: "Article synced successfully" });
     } catch (error) {
         console.error("Webhook Error:", error);
         res.status(500).json({ error: "Internal server error during sync" });
