@@ -5,6 +5,7 @@ const { Server } = require('socket.io'); // 2. Import Socket.io
 const tradifyRouter = require('./routes/TradifyRoute');
 const zeejayRouter = require('./routes/ZeejayRoute');
 const raElectricalRouter = require('./routes/RaElectricalRoute');
+const connectZeejayDB = require('./utils/db');
 
 const app = express();
 
@@ -24,6 +25,7 @@ const corsOptions = {
   optionsSuccessStatus: 200 
 };
 
+connectZeejayDB()
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));

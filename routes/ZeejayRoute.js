@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const nodemailer = require('nodemailer');
+const Article = require('../schema/ZeejayBlogs');
 require('dotenv').config();
 const SDK = require('@ringcentral/sdk').SDK;
 // Initialize RingCentral SDK
@@ -188,6 +189,83 @@ router.post('/contact', async (req, res) => {
   }
 });
 
+
+/**
+ * 1. WEBHOOK: Receive and Save/Update Blog Data
+ * Triggered by your external publishing event
+ */
+router.post('/webhook/publish', async (req, res) => {
+    try {
+        const data = req.body;
+
+        // Upsert (Update if exists by externalId, otherwise Insert)
+        const article = await Article.findOneAndUpdate(
+            { externalId: data.id }, 
+            {
+                externalId: data.id,
+                title: data.title,
+                slug: data.slug,
+                published_url: data.published_url,
+                metaDescription: data.metaDescription,
+                content_html: data.content_html,
+                content_markdown: data.content_markdown,
+                heroImageUrl: data.heroImageUrl,
+                heroImageAlt: data.heroImageAlt,
+                infographicImageUrl: data.infographicImageUrl,
+                keywords: data.keywords,
+                metaKeywords: data.metaKeywords,
+                wordpressTags: data.wordpressTags,
+                faqSchema: data.faqSchema,
+                languageCode: data.languageCode,
+                status: data.status,
+                publishedAt: data.publishedAt,
+                updatedAt: data.updatedAt,
+                createdAt: data.createdAt
+            },
+            { upsert: true, new: true }
+        );
+
+        console.log(`Article "${article.title}" processed via webhook.`);
+        res.status(200).json({ success: true, message: "Article synced successfully" });
+    } catch (error) {
+        console.error("Webhook Error:", error);
+        res.status(500).json({ error: "Internal server error during sync" });
+    }
+});
+
+
+router.get('/articles', async (req, res) => {
+    try {
+        // We only select specific fields to keep the response light
+        const articles = await Article.find({ status: 'published' })
+            .select('title slug heroImageUrl metaDescription publishedAt')
+            .sort({ publishedAt: -1 }); // Newest first
+
+        res.json(articles);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch articles" });
+    }
+});
+
+/**
+ * Fetch a single article by its slug
+ */
+router.get('/articles/:slug', async (req, res) => {
+    try {
+        const article = await Article.findOne({ 
+            slug: req.params.slug, 
+            status: 'published' 
+        });
+
+        if (!article) {
+            return res.status(404).json({ error: "Article not found" });
+        }
+
+        res.json(article);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch article details" });
+    }
+});
 
 
 module.exports = router;
