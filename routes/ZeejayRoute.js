@@ -293,13 +293,33 @@ router.post('/webhook/publish', async (req, res) => {
 
 router.get('/articles', async (req, res) => {
     try {
-        // We only select specific fields to keep the response light
-        const articles = await Article.find({ status: 'published' })
-            .select('title slug heroImageUrl metaDescription publishedAt')
-            .sort({ publishedAt: -1 }); // Newest first
+        // 1. Get page and limit from query strings (with defaults)
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        
+        // 2. Calculate the number of documents to skip
+        const skip = (page - 1) * limit;
 
-        res.json(articles);
+        // 3. Run both queries in parallel for better performance
+        const [articles, total] = await Promise.all([
+            Article.find({ status: 'published' })
+                .select('title slug heroImageUrl metaDescription publishedAt keywords')
+                .sort({ publishedAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            Article.countDocuments({ status: 'published' })
+        ]);
+
+        // 4. Return an object containing the data and metadata
+        res.json({
+            articles,
+            total,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit)
+        });
+        
     } catch (error) {
+        console.error("Pagination Error:", error);
         res.status(500).json({ error: "Failed to fetch articles" });
     }
 });
