@@ -25,26 +25,32 @@ const LOCATION_ID = process.env.LOCATION_ID_GURUNANAK;
 // GET REVIEWS
 router.get("/reviews", async (req, res) => {
   try {
-    const url = `https://mybusiness.googleapis.com/v4/accounts/${ACCOUNT_ID}/locations/${LOCATION_ID}/reviews`;
+    const response = await axios.get(
+      "https://api.app.outscraper.com/maps/reviews-v3",
+      {
+        params: {
+          query: "Guru Nanak Bakery Edmonton",
+          reviews_limit: 20,
+        },
+        headers: {
+          "X-API-KEY": process.env.OUTSCRAPER_KEY,
+        },
+      }
+    );
 
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${ACCESS_TOKEN}`,
-      },
-    });
-
-    const reviews = response.data.reviews || [];
+    const reviews = response.data?.data?.[0]?.reviews_data || [];
 
     const formatted = reviews.map((r) => ({
-      name: r.reviewer?.displayName,
-      rating: r.starRating,
-      comment: r.comment,
-      time: r.createTime,
+      name: r.author_title,
+      rating: r.rating,
+      comment: r.review_text,
+      time: r.review_datetime_utc,
+      source: "outscraper",
     }));
 
     res.json(formatted);
   } catch (err) {
-    console.error(err.response?.data || err.message);
+    console.error(err.message);
     res.status(500).json({ error: "Failed to fetch reviews" });
   }
 });
