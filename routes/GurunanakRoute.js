@@ -188,7 +188,7 @@ router.post("/contact", async (req, res) => {
   try {
     await transporter.sendMail({
       from: `"Guru Nanak Bakery Website" <${process.env.GMAIL_USER}>`,
-      to: 'ayush.patel.code@gmail.com',
+      to: 'gurunanakbakery1469@gmail.com',
       subject: `New Bakery Inquiry from ${name}`,
       html: htmlContent,
     });
