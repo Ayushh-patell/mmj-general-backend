@@ -4,6 +4,7 @@ const http = require('http'); // 1. Import HTTP
 const { Server } = require('socket.io'); // 2. Import Socket.io
 const tradifyRouter = require('./routes/TradifyRoute');
 const zeejayRouter = require('./routes/ZeejayRoute');
+const gurunanakRouter = require('./routes/GurunanakRoute');
 const raElectricalRouter = require('./routes/RaElectricalRoute');
 const connectZeejayDB = require('./utils/db');
 
@@ -18,8 +19,11 @@ const corsOptions = {
     'https://www.tradifysolutions.com',
     'https://raelectricalltd.com',
     'https://www.raelectricalltd.com',
+    'https://gurunanakbakery.com',
+    'https://www.gurunanakbakery.com',
     'https://raelectrical-site.web.app',
     'https://zeejaymechanical.web.app',
+    'https://guru_nanak_bakery.web.app',
     'http://localhost:5173',
   ],
   optionsSuccessStatus: 200 
@@ -33,6 +37,7 @@ app.use('/uploads', express.static('uploads'));
 // --- ROUTES ---
 app.use('/tradify', tradifyRouter);
 app.use('/zeejay', zeejayRouter);
+app.use('/gurunanak', gurunanakRouter);
 app.use('/raelectrical', raElectricalRouter);
 
 // Basic health check
