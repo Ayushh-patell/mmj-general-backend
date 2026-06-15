@@ -19,6 +19,7 @@ const corsOptions = {
     'https://www.tradifysolutions.com',
     'https://raelectricalltd.com',
     'https://www.raelectricalltd.com',
+    'https://raelectric.ca/',
     'https://gurunanakbakery.com',
     'https://www.gurunanakbakery.com',
     'https://raelectrical-site.web.app',
