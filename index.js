@@ -19,6 +19,8 @@ const corsOptions = {
     'https://www.tradifysolutions.com',
     'https://raelectricalltd.com',
     'https://www.raelectricalltd.com',
+    'https://raelectric.ca',
+    'https://www.raelectric.ca',
     'https://gurunanakbakery.com',
     'https://www.gurunanakbakery.com',
     'https://raelectrical-site.web.app',
@@ -28,7 +30,7 @@ const corsOptions = {
     'https://guru-nanak-bakery.web.app',
     'http://localhost:5173',
   ],
-  optionsSuccessStatus: 200 
+  optionsSuccessStatus: 200,
 };
 
 connectZeejayDB()
