@@ -304,7 +304,7 @@ router.get('/articles', async (req, res) => {
         const [articles, total] = await Promise.all([
             Article.find({ status: 'published' })
                 .select('title slug heroImageUrl metaDescription publishedAt keywords')
-                .sort({ publishedAt: -1 })
+                .sort({ publishedAt: 1 })
                 .skip(skip)
                 .limit(limit),
             Article.countDocuments({ status: 'published' })
