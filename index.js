@@ -29,6 +29,7 @@ const corsOptions = {
     'https://www.zeejaymechanical.com',
     'https://guru-nanak-bakery.web.app',
     'http://localhost:5173',
+    'http://localhost:45678',
   ],
   optionsSuccessStatus: 200,
 };
