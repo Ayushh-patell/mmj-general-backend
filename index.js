@@ -6,9 +6,20 @@ const tradifyRouter = require('./routes/TradifyRoute');
 const zeejayRouter = require('./routes/ZeejayRoute');
 const gurunanakRouter = require('./routes/GurunanakRoute');
 const raElectricalRouter = require('./routes/RaElectricalRoute');
+const userRoutes = require('./routes/blueboxx/user')
+const orderRoutes = require('./routes/blueboxx/order')
+const utilRoutes = require('./routes/blueboxx/utils')
+const siteBridgeRoutes = require('./routes/blueboxx/siteBridge')
+
 const connectZeejayDB = require('./utils/db');
+const { default: helmet } = require('helmet');
+const morgan = require('morgan');
 
 const app = express();
+
+// Resolve public dir from CWD (project root), not from this file’s folder
+const PUBLIC_DIR = path.resolve(process.cwd(), 'public');
+
 
 
 
@@ -34,8 +45,41 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
+
+
+
+// ⚠️ STRIPE WEBHOOK ROUTE MUST COME BEFORE express.json()
+// It needs access to the raw request body for signature verification.
+app.post(
+  '/api/stripe/webhook',
+  express.raw({ type: 'application/json' }),
+  stripeWebhook
+);
 connectZeejayDB()
+
+
+// Middlewares
 app.use(cors(corsOptions));
+app.use(helmet());
+app.use(express.json());
+app.use(morgan('dev'));
+
+
+// Serve /<file> directly, e.g. /app-versions.json
+app.use(express.static(PUBLIC_DIR, {
+  maxAge: '1h',
+  etag: true,
+}));
+
+// If you also want it under /public/...
+app.use('/public', express.static(PUBLIC_DIR, {
+  maxAge: '1h',
+  etag: true,
+}));
+
+
+
+
 app.use(express.json({ verify: (req, res, buf) => { req.rawBody = buf; } }));
 app.use('/uploads', express.static('uploads'));
 
@@ -44,6 +88,13 @@ app.use('/tradify', tradifyRouter);
 app.use('/zeejay', zeejayRouter);
 app.use('/gurunanak', gurunanakRouter);
 app.use('/raelectrical', raElectricalRouter);
+
+
+// BLUEBOXX Routes
+app.use('/blueboxx/api/user', userRoutes);
+app.use('/blueboxx/api/order', orderRoutes);
+app.use('/blueboxx/api/util', utilRoutes);
+app.use('/blueboxx/api/site', siteBridgeRoutes);
 
 // Basic health check
 app.get('/', (req, res) => res.send('Backend is Active'));
