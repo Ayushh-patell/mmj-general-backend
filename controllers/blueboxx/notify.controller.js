@@ -1,7 +1,7 @@
 // src/api/notifyOrder.js
-import admin from '../../config/blueboxx/firebase.js';
-import User from '../../models/blueboxx/User.js';
-import Site from '../../models/blueboxx/Site.js';
+const admin = require('../../config/blueboxx/firebase');
+const User = require('../../models/blueboxx/User');
+const Site = require('../../models/blueboxx/Site');
 
 // Helpers
 const normalizeTokens = (raw) => {
@@ -49,7 +49,7 @@ const resolveSiteSlug = async (incoming) => {
  * @param {Object} order - Order object (Mongoose doc or plain object)
  * @returns {Promise<{ statusCode: number, body: any }>}
  */
-export const sendOrderNotification = async (order) => {
+const sendOrderNotification = async (order) => {
   try {
     // If it's a Mongoose document, convert to plain object first
     const plainOrder =
@@ -218,7 +218,7 @@ export const sendOrderNotification = async (order) => {
 
 // POST /api/order/notify
 // body: the new order payload (from your other Express backend)
-export const notifyOrder = async (req, res) => {
+const notifyOrder = async (req, res) => {
   const result = await sendOrderNotification(req.body || {});
   return res.status(result.statusCode).json(result.body);
 };
@@ -226,7 +226,7 @@ export const notifyOrder = async (req, res) => {
 // POST /api/order/notify-test
 // body: { username: "someuser" }
 // Sends a test notification ONLY to that user's tokens, with hard-coded data.
-export const notifyTestUser = async (req, res) => {
+const notifyTestUser = async (req, res) => {
   try {
     const usernameRaw = String(req.body?.username || '').trim();
     if (!usernameRaw) {
@@ -329,6 +329,4 @@ export const notifyTestUser = async (req, res) => {
   }
 };
 
-
-
-
+module.exports = { sendOrderNotification, notifyOrder, notifyTestUser };

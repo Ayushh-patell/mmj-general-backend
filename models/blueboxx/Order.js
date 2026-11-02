@@ -1,5 +1,5 @@
 // src/models/Order.js  (shared collection)
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const orderItemSchema = new mongoose.Schema({
   name: String,
@@ -65,4 +65,4 @@ const orderSchema = new mongoose.Schema({
 // Suggested index for date-range dashboards (confirm with getIndexes())
 orderSchema.index({ site: 1, createdAt: 1 });
 
-export default mongoose.models.Order || mongoose.model('Order', orderSchema);
+module.exports = mongoose.models.Order || mongoose.model('Order', orderSchema);

@@ -1,5 +1,5 @@
 // src/controllers/logout.controller.js
-import User from '../../models/blueboxx/User.js';
+const User = require('../../models/blueboxx/User');
 
 /**
  * POST /api/user/logout
@@ -11,7 +11,7 @@ import User from '../../models/blueboxx/User.js';
  * - 200 { message: "Logout Successful" }
  * - 500 { error: "Something went wrong" }
  */
-export const logoutController = async (req, res) => {
+const logoutController = async (req, res) => {
   try {
     const { username, index } = req.body || {};
     // keep behavior: if user not found -> 400 "User not found"
@@ -82,3 +82,5 @@ export const logoutController = async (req, res) => {
       .json({ error: 'Something went wrong' });
   }
 };
+
+module.exports = { logoutController };

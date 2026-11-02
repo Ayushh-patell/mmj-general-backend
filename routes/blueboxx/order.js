@@ -1,15 +1,15 @@
-import express from 'express';
-import { Router } from 'express';
+const express = require('express');
+const { Router } = require('express');
 
-import * as orderController from '../../controllers/blueboxx/order.controller.js';
-import { notifyOrder, notifyTestUser } from '../../controllers/blueboxx/notify.controller.js';
-import { getOrdersBySiteRange } from '../../controllers/blueboxx/order.range.controller.js';
-import { getDashboardSeries } from '../../controllers/blueboxx/order.dashboard.controller.js';
-import { getOrdersBySiteDay } from "../../controllers/blueboxx/order.bySite.controller.js";
-// import { requireAuth } from '../middleware/auth.js';
-import { updateOrderStatus } from '../../controllers/blueboxx/order.status.controller.js';
-import { sendOrderAcceptedEmail, sendOrderPreparedEmail } from '../../controllers/blueboxx/email.controller.js';
-import { getOrderForPrint } from '../../controllers/blueboxx/order.print.controller.js';
+const orderController = require('../../controllers/blueboxx/order.controller');
+const { notifyOrder, notifyTestUser } = require('../../controllers/blueboxx/notify.controller');
+const { getOrdersBySiteRange } = require('../../controllers/blueboxx/order.range.controller');
+const { getDashboardSeries } = require('../../controllers/blueboxx/order.dashboard.controller');
+const { getOrdersBySiteDay } = require('../../controllers/blueboxx/order.bySite.controller');
+// const requireAuth = require('../middleware/auth');
+const { updateOrderStatus } = require('../../controllers/blueboxx/order.status.controller');
+const { sendOrderAcceptedEmail, sendOrderPreparedEmail } = require('../../controllers/blueboxx/email.controller');
+const { getOrderForPrint } = require('../../controllers/blueboxx/order.print.controller');
 
 const router = Router();
 
@@ -26,4 +26,4 @@ router.get('/:orderId/print', getOrderForPrint);
 router.patch('/:id/status', express.json(), updateOrderStatus);
 
 
-export default router;
+module.exports = router;

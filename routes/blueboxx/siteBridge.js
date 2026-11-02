@@ -1,6 +1,6 @@
-import express from 'express';
-import { getSiteBySlugBridge, patchStoreClosedOverrideBridge } from '../../controllers/blueboxx/site.bridge.controller.js';
-import Site from '../../models/blueboxx/Site.js';
+const express = require('express');
+const { getSiteBySlugBridge, patchStoreClosedOverrideBridge } = require('../../controllers/blueboxx/site.bridge.controller');
+const Site = require('../../models/blueboxx/Site');
 
 const router = express.Router();
 
@@ -26,4 +26,4 @@ router.patch(
   patchStoreClosedOverrideBridge
 );
 
-export default router;
+module.exports = router;

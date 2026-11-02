@@ -1,10 +1,10 @@
 // src/routes/util.js
-import { Router } from 'express';
-import { testEmail } from '../../controllers/blueboxx/util.controller.js';
+const { Router } = require('express');
+const { testEmail } = require('../../controllers/blueboxx/util.controller');
 
 const router = Router();
 
 // POST /api/util/test-email
 router.post('/test-email', testEmail);
 
-export default router;
+module.exports = router;

@@ -1,7 +1,7 @@
 // src/controllers/user.controller.js
-import crypto from 'crypto';
-import mongoose from 'mongoose';
-import User from '../../models/blueboxx/User.js';
+const crypto = require('crypto');
+const mongoose = require('mongoose');
+const User = require('../../models/blueboxx/User');
 
 // --- Config ---
 const USER_SECRET = process.env.CREATE_USER_SECRET || ''; // set in your env
@@ -73,7 +73,7 @@ function send(res, data, status = 200) {
 
 // POST /api/user/create
 // body: { username, temp_Password, name, site, secret, premium? }
-export const createUser = async (req, res) => {
+const createUser = async (req, res) => {
   try {
     if (!requireAdminSecret(req, res)) return;
 
@@ -128,7 +128,7 @@ export const createUser = async (req, res) => {
 
 // GET /api/user/list
 // auth: x-admin-secret header, or ?secret=
-export const listUsers = async (req, res) => {
+const listUsers = async (req, res) => {
   try {
     if (!requireAdminSecret(req, res)) return;
 
@@ -163,7 +163,7 @@ export const listUsers = async (req, res) => {
 
 // PATCH /api/user/update
 // body: { secret, userId | username, name?, site?, premium?, recovery_email?, temp_password?, resetPassword? }
-export const updateUser = async (req, res) => {
+const updateUser = async (req, res) => {
   try {
     if (!requireAdminSecret(req, res)) return;
 
@@ -230,3 +230,5 @@ export const updateUser = async (req, res) => {
     return send(res, { error: 'Something went wrong' }, 500);
   }
 };
+
+module.exports = { createUser, listUsers, updateUser };

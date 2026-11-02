@@ -1,6 +1,6 @@
 // src/controllers/orderController.js
-import mongoose from 'mongoose';
-import Order from '../../models/blueboxx/Order.js'; // your existing Order model (strict:false)
+const mongoose = require('mongoose');
+const Order = require('../../models/blueboxx/Order'); // your existing Order model (strict:false)
 
 // Allowed statuses (union of your buckets + a few synonyms already used elsewhere)
 const ALLOWED_STATUSES = new Set([
@@ -9,7 +9,7 @@ const ALLOWED_STATUSES = new Set([
   'fulfilled', 'dispatched', 'complete', 'completed',
 ]);
 
-export async function updateOrderStatus(req, res) {
+async function updateOrderStatus(req, res) {
   try {
     
     const { id } = req.params;
@@ -65,3 +65,5 @@ export async function updateOrderStatus(req, res) {
     return res.status(500).json({ ok: false, message: 'Server error' });
   }
 }
+
+module.exports = { updateOrderStatus };

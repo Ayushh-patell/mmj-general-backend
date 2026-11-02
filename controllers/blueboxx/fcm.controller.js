@@ -1,7 +1,7 @@
-import User from '../../models/blueboxx/User.js';
+const User = require('../../models/blueboxx/User');
 
 // POST /api/user/addToken
-export const addToken = async (req, res) => {
+const addToken = async (req, res) => {
   try {
     const { token, username, index } = req.body || {};
     let keyIndex = index;
@@ -58,3 +58,5 @@ export const addToken = async (req, res) => {
     return res.status(500).json({ error: 'Something went wrong' });
   }
 };
+
+module.exports = { addToken };

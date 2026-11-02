@@ -1,10 +1,10 @@
-import { Router } from 'express';
-import { createUser, listUsers, updateUser } from '../../controllers/blueboxx/user.controller.js';
-import { login } from '../../controllers/blueboxx/auth.controller.js';
-import { accountSetup } from '../../controllers/blueboxx/account.controller.js';
-import { addToken } from '../../controllers/blueboxx/fcm.controller.js';
-import { resetPasswordAfterRecovery, sendRecoveryCode, verifyRecoveryCode } from '../../controllers/blueboxx/recovery.controller.js';
-import { logoutController } from '../../controllers/blueboxx/logout.controller.js';
+const { Router } = require('express');
+const { createUser, listUsers, updateUser } = require('../../controllers/blueboxx/user.controller');
+const { login } = require('../../controllers/blueboxx/auth.controller');
+const { accountSetup } = require('../../controllers/blueboxx/account.controller');
+const { addToken } = require('../../controllers/blueboxx/fcm.controller');
+const { resetPasswordAfterRecovery, sendRecoveryCode, verifyRecoveryCode } = require('../../controllers/blueboxx/recovery.controller');
+const { logoutController } = require('../../controllers/blueboxx/logout.controller');
 
 const router = Router();
 
@@ -21,4 +21,4 @@ router.post('/account/recovery/send-code', sendRecoveryCode);
 router.post('/account/recovery/verify', verifyRecoveryCode);
 router.post('/account/recovery/reset', resetPasswordAfterRecovery);
 
-export default router;
+module.exports = router;

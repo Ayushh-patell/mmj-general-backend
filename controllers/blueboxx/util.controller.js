@@ -1,11 +1,11 @@
 // src/controllers/util.controller.js
-import nodemailer from 'nodemailer';
+const nodemailer = require('nodemailer');
 const ensureEnv = (keys) => {
   const missing = keys.filter((k) => !process.env[k]);
   if (missing.length) throw new Error(`Missing env: ${missing.join(', ')}`);
 };
 
-export const testEmail = async (req, res) => {
+const testEmail = async (req, res) => {
   try {
     // optional quick guard to avoid abuse in prod — set TEST_EMAIL_TOKEN and pass it via header
     if (process.env.TEST_EMAIL_TOKEN) {
@@ -76,3 +76,5 @@ If you received this, SMTP is working ✅.
     return res.status(500).json({ ok: false, error: 'Failed to send test email' });
   }
 };
+
+module.exports = { testEmail };

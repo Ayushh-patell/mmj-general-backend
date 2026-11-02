@@ -1,7 +1,7 @@
 // src/controllers/orders.print.controller.js
-import mongoose from 'mongoose';
-import Site from '../../models/blueboxx/Site.js';
-import Order from '../../models/blueboxx/Order.js'; // shared orders model (strict:false)
+const mongoose = require('mongoose');
+const Site = require('../../models/blueboxx/Site');
+const Order = require('../../models/blueboxx/Order'); // shared orders model (strict:false)
 
 // -----------------------------
 // helpers (same spirit as your by-site controller)
@@ -151,7 +151,7 @@ const normalizeOrderForPrint = (orderDoc, siteDoc) => {
  * Returns:
  * { ok: true, order: { ...normalizedOrder } }
  */
-export const getOrderForPrint = async (req, res) => {
+const getOrderForPrint = async (req, res) => {
   try {
     const { orderId } = req.params || {};
     if (!orderId) return res.status(400).json({ ok: false, error: '`orderId` is required' });
@@ -172,3 +172,5 @@ export const getOrderForPrint = async (req, res) => {
     return res.status(500).json({ ok: false, error: 'Failed to fetch order for print' });
   }
 };
+
+module.exports = { getOrderForPrint };

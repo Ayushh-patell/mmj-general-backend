@@ -1,5 +1,5 @@
 // src/models/Site.js
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const siteSchema = new mongoose.Schema(
   {
@@ -14,4 +14,4 @@ const siteSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.models.Site || mongoose.model('Site', siteSchema);
+module.exports = mongoose.models.Site || mongoose.model('Site', siteSchema);

@@ -1,5 +1,5 @@
 // src/controllers/email.controller.js
-import nodemailer from 'nodemailer';
+const nodemailer = require('nodemailer');
 
 function ensureEnv(keys) {
   const missing = keys.filter((k) => !process.env[k]);
@@ -39,7 +39,7 @@ function isEmail(s) {
  *   orderId?: string                [optional]
  * }
  */
-export const sendOrderAcceptedEmail = async (req, res) => {
+const sendOrderAcceptedEmail = async (req, res) => {
   try {
     ensureEnv(['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'SMTP_FROM']);
 
@@ -158,7 +158,7 @@ export const sendOrderAcceptedEmail = async (req, res) => {
  *   orderId?: string                [optional]
  * }
  */
-export const sendOrderPreparedEmail = async (req, res) => {
+const sendOrderPreparedEmail = async (req, res) => {
   try {
     ensureEnv(['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'SMTP_FROM']);
 
@@ -263,3 +263,5 @@ export const sendOrderPreparedEmail = async (req, res) => {
     return res.status(200).json({ error: 'Something went wrong sending the email' });
   }
 };
+
+module.exports = { sendOrderAcceptedEmail, sendOrderPreparedEmail };

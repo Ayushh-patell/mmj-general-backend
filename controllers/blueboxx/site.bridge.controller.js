@@ -74,7 +74,7 @@ const upstreamPatchSiteById = async (req, siteId, patchBody) => {
  * GET /api/site/:slug
  * Bridges to other backend: GET /api/shop/:slug/site
  */
-export const getSiteBySlugBridge = async (req, res) => {
+const getSiteBySlugBridge = async (req, res) => {
   try {
     const { slug } = req.params || {};
     if (!slug || typeof slug !== 'string') {
@@ -101,7 +101,7 @@ export const getSiteBySlugBridge = async (req, res) => {
  * 2) PATCH /api/admin/sites/:siteId (update storeClosedOverride)
  * 3) console.log basics here
  */
-export const patchStoreClosedOverrideBridge = async (req, res) => {
+const patchStoreClosedOverrideBridge = async (req, res) => {
   try {
     const { slug } = req.params || {};
     const { storeClosedOverride } = req.body || {};
@@ -153,3 +153,5 @@ export const patchStoreClosedOverrideBridge = async (req, res) => {
     });
   }
 };
+
+module.exports = { getSiteBySlugBridge, patchStoreClosedOverrideBridge };

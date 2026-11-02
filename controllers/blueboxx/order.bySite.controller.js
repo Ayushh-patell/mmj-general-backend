@@ -1,8 +1,8 @@
 // src/controllers/orders.bySite.controller.js
-import mongoose from 'mongoose';
-import Site from '../../models/blueboxx/Site.js';
-import Order from '../../models/blueboxx/Order.js'; // shared orders model (strict:false)
-import { UserDefinedMessageSubscriptionListInstance } from 'twilio/lib/rest/api/v2010/account/call/userDefinedMessageSubscription.js';
+const mongoose = require('mongoose');
+const Site = require('../../models/blueboxx/Site');
+const Order = require('../../models/blueboxx/Order'); // shared orders model (strict:false)
+const { UserDefinedMessageSubscriptionListInstance } = require('twilio/lib/rest/api/v2010/account/call/userDefinedMessageSubscription');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIG
@@ -115,7 +115,7 @@ const setIfPathExists = (obj, path, value) => {
  * Index hint (recommended):
  *   db.orders.createIndex({ site: 1, createdAt: -1 })
  */
-export const getOrdersBySiteDay = async (req, res) => {
+const getOrdersBySiteDay = async (req, res) => {
   try {
     const { site: siteSlug, date, tz, extraDays } = req.query || {};
 
@@ -244,3 +244,5 @@ export const getOrdersBySiteDay = async (req, res) => {
     return res.status(500).json({ ok: false, error: 'Failed to fetch orders' });
   }
 };
+
+module.exports = { getOrdersBySiteDay };

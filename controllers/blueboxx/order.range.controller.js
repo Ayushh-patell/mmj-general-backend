@@ -1,7 +1,7 @@
 // src/controllers/orders.range.controller.js
-import mongoose from 'mongoose';
-import Site from '../../models/blueboxx/Site.js';
-import Order from '../../models/blueboxx/Order.js'; // shared orders model, strict:false
+const mongoose = require('mongoose');
+const Site = require('../../models/blueboxx/Site');
+const Order = require('../../models/blueboxx/Order'); // shared orders model, strict:false
 
 const CANADA_TZ = 'America/Edmonton';
 const MAX_CUSTOM_DAYS = 62; // ~2 months
@@ -82,7 +82,7 @@ const setIfPathExists = (obj, path, value) => {
  *
  * Returns: { ok, site, mode, tz, window:{ start, end }, count, orders[] }
  */
-export const getOrdersBySiteRange = async (req, res) => {
+const getOrdersBySiteRange = async (req, res) => {
   try {
     const { site: siteSlug, mode } = req.query || {};
     let { start: startStr, end: endStr } = req.query || {};
@@ -253,3 +253,5 @@ export const getOrdersBySiteRange = async (req, res) => {
     return res.status(500).json({ ok: false, error: 'Failed to fetch orders' });
   }
 };
+
+module.exports = { getOrdersBySiteRange };

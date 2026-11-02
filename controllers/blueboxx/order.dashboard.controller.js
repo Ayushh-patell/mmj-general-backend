@@ -1,7 +1,7 @@
 // src/controllers/orders.dashboard.controller.js
-import mongoose from 'mongoose';
-import Site from '../../models/blueboxx/Site.js';
-import Order from '../../models/blueboxx/Order.js'; // shared orders model (strict:false)
+const mongoose = require('mongoose');
+const Site = require('../../models/blueboxx/Site');
+const Order = require('../../models/blueboxx/Order'); // shared orders model (strict:false)
 
 const CANADA_TZ = 'America/Edmonton';
 const MAX_CUSTOM_DAYS = 62; // ~2 months
@@ -85,7 +85,7 @@ function customerIdExpr() {
  *   totals: { orders, revenue, customersUnique, menuUnique }
  * }
  */
-export const getDashboardSeries = async (req, res) => {
+const getDashboardSeries = async (req, res) => {
   try {
     const { site: siteParam, mode } = req.query || {};
     let { start: startStr, end: endStr } = req.query || {};
@@ -327,3 +327,5 @@ export const getDashboardSeries = async (req, res) => {
     return res.status(500).json({ ok: false, error: 'Failed to build dashboard series' });
   }
 };
+
+module.exports = { getDashboardSeries };

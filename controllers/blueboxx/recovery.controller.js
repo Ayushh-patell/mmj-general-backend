@@ -1,8 +1,8 @@
-import bcrypt from 'bcryptjs';
-import nodemailer from 'nodemailer';
-import User from '../../models/blueboxx/User.js';
-import jwt from 'jsonwebtoken';
-import RecoveryCode from '../../models/blueboxx/RecoveryCode.js';
+const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
+const User = require('../../models/blueboxx/User');
+const jwt = require('jsonwebtoken');
+const RecoveryCode = require('../../models/blueboxx/RecoveryCode');
 
 const SALT_ROUNDS = 10;
 
@@ -38,7 +38,7 @@ function escapeHtml(s) {
 }
 
 // POST /api/user/account/recovery/send-code
-export const sendRecoveryCode = async (req, res) => {
+const sendRecoveryCode = async (req, res) => {
   try {
     // ensure required env vars
     ensureEnv([
@@ -149,7 +149,7 @@ If you didn’t request this, ignore this email.`;
 };
 
 // POST /api/user/account/recovery/verify
-export const verifyRecoveryCode = async (req, res) => {
+const verifyRecoveryCode = async (req, res) => {
   try {
     const { username, code } = req.body || {};
 
@@ -195,7 +195,7 @@ export const verifyRecoveryCode = async (req, res) => {
 
 
 // POST /api/user/account/recovery/reset
-export const resetPasswordAfterRecovery = async (req, res) => {
+const resetPasswordAfterRecovery = async (req, res) => {
   try {
     // sanity check
     if (!process.env.JWT_SECRET) {
@@ -300,3 +300,5 @@ export const resetPasswordAfterRecovery = async (req, res) => {
     return res.status(500).json({ error: 'Something went wrong' });
   }
 };
+
+module.exports = { sendRecoveryCode, verifyRecoveryCode, resetPasswordAfterRecovery };
