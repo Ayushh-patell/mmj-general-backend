@@ -3,7 +3,7 @@ const { sendEmail } = require("../utils/emailService");
 
 const router = express.Router();
 
-const RECEIVER_EMAIL = 'ayush.patel.code@gmail.com';
+const RECEIVER_EMAIL = 'geoveraagrotech@gmail.com';
 
 
 // Helper: Generate email template
