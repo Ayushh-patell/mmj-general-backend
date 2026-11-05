@@ -6,6 +6,7 @@ const tradifyRouter = require('./routes/TradifyRoute');
 const zeejayRouter = require('./routes/ZeejayRoute');
 const gurunanakRouter = require('./routes/GurunanakRoute');
 const raElectricalRouter = require('./routes/RaElectricalRoute');
+const geoveraRouter = require('./routes/GeoveraRoute');
 const connectZeejayDB = require('./utils/db');
 
 const app = express();
@@ -28,6 +29,7 @@ const corsOptions = {
     'https://zeejaymechanical.com',
     'https://www.zeejaymechanical.com',
     'https://guru-nanak-bakery.web.app',
+    'https://geovera.web.app',
     'http://localhost:5173',
     'http://localhost:45678',
   ],
@@ -44,6 +46,7 @@ app.use('/tradify', tradifyRouter);
 app.use('/zeejay', zeejayRouter);
 app.use('/gurunanak', gurunanakRouter);
 app.use('/raelectrical', raElectricalRouter);
+app.use('/geovera', geoveraRouter);
 
 // Basic health check
 app.get('/', (req, res) => res.send('Backend is Active'));
